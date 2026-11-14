@@ -38,6 +38,10 @@ services:
     restart: unless-stopped
     env_file:
       - ./admin/.env
+    environment:
+      # Einbettung unter abgemiked.de/nicebot: CSRF-Origin + SSO-Bridge-Ziel.
+      - PUBLIC_ORIGIN=https://abgemiked.de
+      - CENTRAL_AUTH_URL=http://central-auth-backend:4150
     volumes:
       # Bot-config.json (rw, für spätere Konfig-Verwaltung M2)
       - ./config:/app/bot_config
@@ -48,6 +52,9 @@ services:
     networks:
       - default
       - npm-web
+      # Website-nginx erreicht nicebot-admin hier für den /nicebot-Proxy;
+      # nicebot-admin erreicht central-auth-backend für die SSO-Bridge.
+      - abgemiked_data
 
 # Kein Host-Port-Mapping: der interne Service-Endpoint (service_api.py,
 # Port 8130) ist nur aus den Docker-Netzen erreichbar — turnier-backend
@@ -61,3 +68,6 @@ networks:
   npm-web:
     external: true
     name: nginx-proxy-manager_web_net
+  abgemiked_data:
+    external: true
+    name: abgemiked_data

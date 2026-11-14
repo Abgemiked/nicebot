@@ -4,10 +4,10 @@ import { CARD, Icon, Pager, TABLE_WRAP, TH, toast } from "./ui";
 
 const PAGE_SIZE = 25;
 const TYPE: Record<string, [string, string]> = {
-  message_delete: ["Nachricht gelöscht", "#ff5470"],
-  member_leave: ["Member verlassen", "#8a82a6"],
-  dm_sent: ["DM gesendet", "#a24bff"],
-  admin_override: ["Admin-Änderung", "#f5b544"],
+  message_delete: ["Nachricht gelöscht", "#f87171"],
+  member_leave: ["Member verlassen", "#9ca3af"],
+  dm_sent: ["DM gesendet", "#9333ea"],
+  admin_override: ["Admin-Änderung", "#fbbf24"],
 };
 
 function fmt(ts: string): string {
@@ -45,26 +45,26 @@ export default function AuditPage() {
   return (
     <div className="flex flex-col gap-5" onClick={() => setOpen(false)}>
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-        <Kpi icon={ICON.users} iconBg="rgba(162,75,255,.14)" iconColor="#c9a6ff" label="Mitglieder gesamt" value={stats?.member_count} />
-        <Kpi icon={ICON.check} iconBg="rgba(53,217,160,.14)" iconColor="#35d9a0" label="Ohne Bots / Ignoriert" value={stats?.members_without_ignored} />
-        <Kpi icon={ICON.log} iconBg="rgba(91,140,255,.14)" iconColor="#7ca3ff" label="Audit-Einträge" value={data?.total} />
+        <Kpi icon={ICON.users} iconBg="rgba(147,51,234,.14)" iconColor="#c084fc" label="Mitglieder gesamt" value={stats?.member_count} />
+        <Kpi icon={ICON.check} iconBg="rgba(134,239,172,.14)" iconColor="#86efac" label="Ohne Bots / Ignoriert" value={stats?.members_without_ignored} />
+        <Kpi icon={ICON.log} iconBg="rgba(147,51,234,.14)" iconColor="#c084fc" label="Audit-Einträge" value={data?.total} />
       </div>
 
       <div className="flex items-center gap-2.5" onClick={(e) => e.stopPropagation()}>
         <span className="text-[13px] font-medium text-muted2">Ereignistyp</span>
         <div className="relative">
-          <button onClick={() => setOpen(!open)} className="flex min-w-[190px] items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-2.5 transition hover:border-[#3a3358]">
-            <span className="flex-1 text-left text-[13.5px] font-medium text-[#d8d2ec]">{filterLabel}</span>
-            <span className="text-[#7d76a0]">{Icon.chevron}</span>
+          <button onClick={() => setOpen(!open)} className="flex min-w-[190px] items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 py-2.5 transition hover:border-[#4b5563]">
+            <span className="flex-1 text-left text-[13.5px] font-medium text-[#e5e7eb]">{filterLabel}</span>
+            <span className="text-[#9ca3af]">{Icon.chevron}</span>
           </button>
           {open && (
-            <div className="absolute left-0 top-[calc(100%+6px)] z-40 min-w-[210px] animate-fIn rounded-xl border border-[#322a4d] bg-raised p-1.5 shadow-[0_24px_48px_-16px_rgba(0,0,0,.85)]">
+            <div className="absolute left-0 top-[calc(100%+6px)] z-40 min-w-[210px] animate-fIn rounded-xl border border-[#374151] bg-raised p-1.5 shadow-[0_24px_48px_-16px_rgba(0,0,0,.85)]">
               {options.map((o) => {
-                const [label, color] = o ? (TYPE[o] ?? [o, "#8a82a6"]) : ["Alle Typen", "#8a82a6"];
+                const [label, color] = o ? (TYPE[o] ?? [o, "#9ca3af"]) : ["Alle Typen", "#9ca3af"];
                 return (
-                  <button key={o || "all"} onClick={() => { setType(o); setPage(1); setOpen(false); }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left hover:bg-[#241d3a]">
+                  <button key={o || "all"} onClick={() => { setType(o); setPage(1); setOpen(false); }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left hover:bg-[#1f2937]">
                     <span className="h-2 w-2 flex-none rounded-full" style={{ background: color }} />
-                    <span className="flex-1 text-[13.5px] text-[#d8d2ec]">{label}</span>
+                    <span className="flex-1 text-[13.5px] text-[#e5e7eb]">{label}</span>
                     {type === o && <span className="text-accentsoft">{Icon.check}</span>}
                   </button>
                 );
@@ -86,12 +86,12 @@ export default function AuditPage() {
           </thead>
           <tbody>
             {data?.items.map((e) => {
-              const [label, color] = TYPE[e.event_type] ?? [e.event_type, "#8a82a6"];
+              const [label, color] = TYPE[e.event_type] ?? [e.event_type, "#9ca3af"];
               return (
-                <tr key={e.id} className="border-t border-[#201a34] align-top hover:bg-hover">
-                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-[#857ea6]">{fmt(e.ts)}</td>
+                <tr key={e.id} className="border-t border-[#1f2937] align-top hover:bg-hover">
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-[#6b7280]">{fmt(e.ts)}</td>
                   <td className="px-4 py-3"><span className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold" style={{ background: color + "1e", color }}><span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />{label}</span></td>
-                  <td className="px-4 py-3"><div className="text-[13.5px] text-ink">{e.target_name ?? "—"}</div>{e.actor_name && <div className="text-[11.5px] text-[#6b6390]">durch {e.actor_name}</div>}</td>
+                  <td className="px-4 py-3"><div className="text-[13.5px] text-ink">{e.target_name ?? "—"}</div>{e.actor_name && <div className="text-[11.5px] text-[#9ca3af]">durch {e.actor_name}</div>}</td>
                   <td className="px-4 py-3 text-[13px] text-muted">{detail(e)}</td>
                 </tr>
               );

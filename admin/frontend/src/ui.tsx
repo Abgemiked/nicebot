@@ -1,35 +1,28 @@
 import { useEffect, useState } from "react";
 
-// --- Klassen-Konstanten (Design-System) ---
-export const GRAD = "bg-[linear-gradient(135deg,#8b45ff,#d846c9)]";
-export const CARD = "rounded-2xl border border-line bg-surface shadow-card";
+// --- Klassen-Konstanten (Design-System abgemiked.de: gray-950/900, purple-600, Inter) ---
+export const GRAD = "bg-purple-600";
+export const CARD = "rounded-2xl border border-gray-800 bg-gray-900 shadow-card";
 export const INPUT =
-  "w-full rounded-[10px] border border-line2 bg-input px-3 py-2.5 text-sm font-medium text-ink outline-none transition focus:border-accent focus:shadow-[0_0_0_3px_rgba(162,75,255,.16)]";
+  "w-full rounded-md border border-gray-700 bg-gray-800/60 px-3 py-2.5 text-sm text-gray-200 outline-none transition focus:border-purple-500 focus:shadow-[0_0_0_2px_rgba(168,85,247,.25)]";
 export const BTN_PRIMARY =
-  `inline-flex items-center justify-center gap-2 ${GRAD} rounded-[11px] px-[18px] py-[11px] text-sm font-semibold text-white shadow-glow transition hover:brightness-110 disabled:opacity-50`;
+  "inline-flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-purple-700 disabled:opacity-50";
 export const BTN_SECONDARY =
-  "inline-flex items-center justify-center gap-2 rounded-[10px] border border-[#2f2848] bg-[#1b1730] px-4 py-2.5 text-sm font-semibold text-[#cfc9e2] transition hover:bg-[#221c38] disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-md border border-gray-600 bg-transparent px-4 py-2.5 text-sm font-medium text-gray-300 transition hover:border-purple-500 hover:text-white disabled:opacity-50";
 export const BTN_DANGER =
-  "inline-flex items-center justify-center gap-2 rounded-[10px] border border-[rgba(255,84,112,.3)] bg-[rgba(255,84,112,.12)] px-4 py-2.5 text-sm font-semibold text-danger2 transition hover:bg-[rgba(255,84,112,.2)] disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-md border border-red-900/60 bg-red-950/30 px-4 py-2.5 text-sm font-medium text-red-300 transition hover:bg-red-950/50 disabled:opacity-50";
 export const ICON_BTN =
-  "flex h-8 w-8 items-center justify-center rounded-[9px] border border-[#2c2546] bg-transparent text-[#928bb0] transition";
+  "flex h-8 w-8 items-center justify-center rounded-md border border-gray-700 bg-transparent text-gray-400 transition hover:border-gray-600 hover:text-white";
 export const TABLE_WRAP =
-  "overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_22px_40px_-32px_rgba(0,0,0,.9)]";
+  "overflow-hidden rounded-2xl border border-gray-800 bg-gray-900";
 export const TH =
-  "px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[.06em] text-[#7a7298]";
+  "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-gray-400";
 
-// --- Avatar / Initialen / Rollenfarben ---
-const AV_PALETTE = [
-  "linear-gradient(135deg,#8B45FF,#D846C9)",
-  "linear-gradient(135deg,#5B8CFF,#3FC8D8)",
-  "linear-gradient(135deg,#FF7AD9,#FF5470)",
-  "linear-gradient(135deg,#35D9A0,#3FC8D8)",
-  "linear-gradient(135deg,#C065FF,#8B45FF)",
-  "linear-gradient(135deg,#F5B544,#FF7AD9)",
-];
+// --- Avatar / Initialen / Rollenfarben (gedeckte Grau-/Purpletöne statt Neon) ---
+const AV_PALETTE = ["#374151", "#7e22ce", "#334155", "#4b5563", "#6d28d9", "#475569"];
 const ROLE_PALETTE = [
-  "#FF5470", "#FF7AD9", "#A24BFF", "#5B8CFF", "#C065FF",
-  "#FF8FE0", "#3FC8D8", "#35D9A0", "#F5B544", "#7CA3FF",
+  "#c084fc", "#9ca3af", "#7dd3fc", "#86efac", "#fcd34d",
+  "#f9a8d4", "#a5b4fc", "#fca5a5", "#d1d5db", "#93c5fd",
 ];
 
 function hash(seed: string): number {
@@ -55,7 +48,7 @@ export function roleColor(seed: string): string {
 export function Avatar({ seed, label, size = 34 }: { seed: string; label: string; size?: number }) {
   return (
     <span
-      className="flex flex-none items-center justify-center rounded-[10px] font-sora font-bold text-white"
+      className="flex flex-none items-center justify-center rounded-full font-sans font-semibold text-white"
       style={{ width: size, height: size, background: avatarGradient(seed), fontSize: size * 0.41 }}
     >
       {initialOf(label)}
@@ -99,17 +92,17 @@ export function Toast() {
   const ok = t.kind === "ok";
   return (
     <div
-      className="fixed bottom-6 right-6 z-[80] flex min-w-[250px] animate-tIn items-center gap-3 rounded-[13px] border bg-[#171327] px-4 py-3 shadow-[0_22px_44px_-16px_rgba(0,0,0,.8)]"
-      style={{ borderColor: ok ? "rgba(53,217,160,.32)" : "rgba(255,84,112,.32)" }}
+      className="fixed bottom-6 right-6 z-[80] flex min-w-[250px] animate-tIn items-center gap-3 rounded-xl border bg-gray-900 px-4 py-3 shadow-[0_22px_44px_-16px_rgba(0,0,0,.8)]"
+      style={{ borderColor: ok ? "rgba(134,239,172,.4)" : "rgba(252,165,165,.4)" }}
     >
       <span
         className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-lg"
-        style={{ background: ok ? "rgba(53,217,160,.16)" : "rgba(255,84,112,.16)" }}
+        style={{ background: ok ? "rgba(134,239,172,.16)" : "rgba(252,165,165,.16)" }}
       >
         {ok ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#35D9A0" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#86efac" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
         ) : (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF7A92" strokeWidth="2.4" strokeLinecap="round"><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fca5a5" strokeWidth="2.4" strokeLinecap="round"><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
         )}
       </span>
       <span className="text-sm font-medium text-ink">{t.msg}</span>
@@ -166,10 +159,10 @@ export function Pager({
   label: string;
 }) {
   const btn =
-    "flex items-center gap-1.5 rounded-[9px] border border-[#2c2546] bg-surface px-3 py-2 text-[13px] font-semibold text-[#b3aacb] transition hover:bg-[#1c1730] hover:border-[#3a3358] disabled:opacity-40";
+    "flex items-center gap-1.5 rounded-md border border-gray-700 bg-transparent px-3 py-2 text-[13px] font-medium text-gray-300 transition hover:border-gray-600 hover:text-white disabled:opacity-40";
   return (
     <div className="flex items-center justify-end gap-3">
-      <span className="font-mono text-xs text-[#857ea6]">{label}</span>
+      <span className="text-xs text-gray-500">{label}</span>
       <button disabled={page <= 1} onClick={onPrev} className={btn}>
         {Icon.prev}Zurück
       </button>

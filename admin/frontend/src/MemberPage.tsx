@@ -22,10 +22,10 @@ export default function MemberPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <form onSubmit={(e) => { e.preventDefault(); setPage(1); setApplied(search); }} className="relative w-[340px] max-w-full">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f688c]">{Icon.search}</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9ca3af]">{Icon.search}</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name oder ID suchen…" className={`${INPUT} bg-surface !border-line pl-10`} />
         </form>
-        <span className="font-mono text-xs text-[#857ea6]">{data ? `${data.total} Mitglieder` : "…"}</span>
+        <span className="font-mono text-xs text-[#6b7280]">{data ? `${data.total} Mitglieder` : "…"}</span>
       </div>
 
       <div className={TABLE_WRAP}>
@@ -42,11 +42,11 @@ export default function MemberPage() {
               const shown = m.roles.slice(0, 4);
               const more = m.roles.length - shown.length;
               return (
-                <tr key={m.id} className="border-t border-[#201a34] align-top hover:bg-hover">
+                <tr key={m.id} className="border-t border-[#1f2937] align-top hover:bg-hover">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar seed={m.id} label={m.display_name} />
-                      <div className="min-w-0"><div className="text-sm font-semibold text-ink">{m.display_name}</div><div className="font-mono text-[10.5px] text-[#6b6390]">@{m.name}</div></div>
+                      <div className="min-w-0"><div className="text-sm font-semibold text-ink">{m.display_name}</div><div className="font-mono text-[10.5px] text-[#9ca3af]">@{m.name}</div></div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -59,7 +59,7 @@ export default function MemberPage() {
                           </span>
                         );
                       })}
-                      {more > 0 && <span className="rounded-md bg-[#221c38] px-2 py-[3px] text-xs font-semibold text-[#857ea6]">+{more}</span>}
+                      {more > 0 && <span className="rounded-md bg-[#1f2937] px-2 py-[3px] text-xs font-semibold text-[#6b7280]">+{more}</span>}
                       {m.roles.length === 0 && <span className="text-xs text-faint">—</span>}
                     </div>
                   </td>

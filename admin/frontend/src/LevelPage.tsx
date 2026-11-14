@@ -45,11 +45,11 @@ export default function LevelPage({ canEdit }: { canEdit: boolean }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <form onSubmit={(e) => { e.preventDefault(); setPage(1); setApplied(search); }} className="relative w-80 max-w-full">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6f688c]">{Icon.search}</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9ca3af]">{Icon.search}</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Nutzer oder ID suchen…"
             className={`${INPUT} bg-surface !border-line pl-10`} />
         </form>
-        <span className="font-mono text-xs text-[#857ea6]">
+        <span className="font-mono text-xs text-[#6b7280]">
           {data ? (data.total === 0 ? "0 Einträge" : `${startRank + 1}–${startRank + data.items.length} von ${data.total}`) : "…"}
         </span>
       </div>
@@ -72,26 +72,26 @@ export default function LevelPage({ canEdit }: { canEdit: boolean }) {
               const cur = Math.min(u.exp, need);
               const pct = Math.max(4, Math.min(100, Math.round((cur / need) * 100)));
               return (
-                <tr key={u.user_id} className="border-t border-[#201a34] hover:bg-hover">
+                <tr key={u.user_id} className="border-t border-[#1f2937] hover:bg-hover">
                   <td className="px-4 py-3 font-mono text-[13px] text-faint">{startRank + i + 1}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar seed={u.user_id} label={u.username ?? "?"} />
                       <div className="min-w-0">
                         <div className="text-sm font-semibold text-ink">{u.username || "Unbekannt"}</div>
-                        <div className="font-mono text-[10.5px] text-[#6b6390]">{u.user_id}</div>
+                        <div className="font-mono text-[10.5px] text-[#9ca3af]">{u.user_id}</div>
                       </div>
                     </div>
                   </td>
                   <td className="w-[200px] px-4 py-3">
-                    <div className="h-[7px] overflow-hidden rounded-[4px] bg-[#221c38]"><div className="h-full rounded-[4px] bg-[linear-gradient(90deg,#8b45ff,#d846c9)]" style={{ width: pct + "%" }} /></div>
-                    <div className="mt-1.5 font-mono text-[10px] text-[#6b6390]">{cur.toLocaleString("de-DE")} / {need.toLocaleString("de-DE")} EXP</div>
+                    <div className="h-[7px] overflow-hidden rounded-[4px] bg-[#1f2937]"><div className="h-full rounded-[4px] bg-[linear-gradient(90deg,#7e22ce,#7e22ce)]" style={{ width: pct + "%" }} /></div>
+                    <div className="mt-1.5 font-mono text-[10px] text-[#9ca3af]">{cur.toLocaleString("de-DE")} / {need.toLocaleString("de-DE")} EXP</div>
                   </td>
-                  <td className="px-4 py-3 text-right"><span className="inline-block min-w-[32px] rounded-lg bg-[rgba(162,75,255,.14)] px-2.5 py-1 text-center font-sora text-[13px] font-bold text-accentsoft">{u.level}</span></td>
-                  <td className="px-4 py-3 text-right font-mono text-[13px] text-[#b3aacb]">{u.exp.toLocaleString("de-DE")}</td>
+                  <td className="px-4 py-3 text-right"><span className="inline-block min-w-[32px] rounded-lg bg-[rgba(147,51,234,.14)] px-2.5 py-1 text-center font-sora text-[13px] font-bold text-accentsoft">{u.level}</span></td>
+                  <td className="px-4 py-3 text-right font-mono text-[13px] text-[#d1d5db]">{u.exp.toLocaleString("de-DE")}</td>
                   {canEdit && (
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => setEditing(u)} title="Bearbeiten" className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-[#2c2546] text-[#928bb0] transition hover:border-accent hover:bg-[rgba(162,75,255,.14)] hover:text-accentsoft">{Icon.edit}</button>
+                      <button onClick={() => setEditing(u)} title="Bearbeiten" className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-[#374151] text-[#9ca3af] transition hover:border-accent hover:bg-[rgba(147,51,234,.14)] hover:text-accentsoft">{Icon.edit}</button>
                     </td>
                   )}
                 </tr>
@@ -113,7 +113,7 @@ function EditModal({ user, onClose, onSaved }: { user: LevelUser; onClose: () =>
   const [level, setLevel] = useState(String(user.level));
   const [exp, setExp] = useState(String(user.exp));
   const [saving, setSaving] = useState(false);
-  const FIELD = "w-full rounded-[10px] border border-line2 bg-input px-3 py-3 font-mono text-[15px] font-semibold text-ink outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(162,75,255,.16)]";
+  const FIELD = "w-full rounded-[10px] border border-line2 bg-input px-3 py-3 font-mono text-[15px] font-semibold text-ink outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(147,51,234,.16)]";
 
   async function save() {
     const lvl = Number(level.trim()), xp = Number(exp.trim());
@@ -128,14 +128,14 @@ function EditModal({ user, onClose, onSaved }: { user: LevelUser; onClose: () =>
   }
 
   return (
-    <div onClick={onClose} className="fixed inset-0 z-[60] flex animate-[fIn_.15s_ease] items-center justify-center bg-[rgba(6,4,14,.74)] p-6 backdrop-blur-sm">
-      <div onClick={(e) => e.stopPropagation()} className="w-[420px] max-w-full animate-mIn overflow-hidden rounded-[20px] border border-[#2c2546] bg-surface shadow-[0_50px_100px_-30px_rgba(0,0,0,.9)]">
-        <div className="flex items-center justify-between border-b border-[#221c38] px-5 py-5">
+    <div onClick={onClose} className="fixed inset-0 z-[60] flex animate-[fIn_.15s_ease] items-center justify-center bg-[rgba(3,7,18,.74)] p-6 backdrop-blur-sm">
+      <div onClick={(e) => e.stopPropagation()} className="w-[420px] max-w-full animate-mIn overflow-hidden rounded-[20px] border border-[#374151] bg-surface shadow-[0_50px_100px_-30px_rgba(0,0,0,.9)]">
+        <div className="flex items-center justify-between border-b border-[#1f2937] px-5 py-5">
           <div className="flex items-center gap-3">
             <Avatar seed={user.user_id} label={user.username ?? "?"} size={38} />
-            <div><div className="font-sora text-base font-bold text-ink2">{user.username ?? "—"}</div><div className="font-mono text-[10.5px] text-[#6b6390]">{user.user_id}</div></div>
+            <div><div className="font-sora text-base font-bold text-ink2">{user.username ?? "—"}</div><div className="font-mono text-[10.5px] text-[#9ca3af]">{user.user_id}</div></div>
           </div>
-          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[#1c1730] text-[#928bb0] transition hover:bg-[#241d3a] hover:text-ink">{Icon.x}</button>
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[#111827] text-[#9ca3af] transition hover:bg-[#1f2937] hover:text-ink">{Icon.x}</button>
         </div>
         <div className="flex flex-col gap-4 p-5">
           <div><label className="mb-1.5 block text-[12.5px] font-semibold text-muted">Level</label><input value={level} inputMode="numeric" onChange={(e) => setLevel(e.target.value)} className={FIELD} /></div>

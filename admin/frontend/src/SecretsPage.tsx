@@ -45,27 +45,27 @@ export default function SecretsPage() {
         <button onClick={onSave} disabled={saving} className={BTN_PRIMARY}>{Icon.check}{saving ? "Speichert …" : "Speichern"}</button>
       </div>
 
-      <div className="flex items-start gap-3 rounded-[14px] border border-[rgba(245,181,68,.22)] bg-[rgba(245,181,68,.08)] px-4 py-3.5">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5B544" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-none"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></svg>
-        <div className="text-[13px] leading-relaxed text-[#d8c9a8]">Laufzeit-Secrets aus der <span className="font-mono text-[#f5c97a]">.env</span>. Standardmäßig verborgen — zum Anzeigen das Augen-Symbol nutzen. Änderungen wirken erst nach <b className="font-semibold text-[#f5c97a]">Bot-Neustart</b>.</div>
+      <div className="flex items-start gap-3 rounded-[14px] border border-[rgba(251,191,36,.22)] bg-[rgba(251,191,36,.08)] px-4 py-3.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fcd34d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-none"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></svg>
+        <div className="text-[13px] leading-relaxed text-[#fcd34d]">Laufzeit-Secrets aus der <span className="font-mono text-[#fcd34d]">.env</span>. Standardmäßig verborgen — zum Anzeigen das Augen-Symbol nutzen. Änderungen wirken erst nach <b className="font-semibold text-[#fcd34d]">Bot-Neustart</b>.</div>
       </div>
 
       {secrets.map((e) => (
         <div key={e.key} className={`${CARD} p-4`}>
           <div className="mb-2.5 flex items-center justify-between gap-2.5">
-            <span className="text-[13.5px] font-semibold text-[#e7e3f4]">{e.label}</span>
+            <span className="text-[13.5px] font-semibold text-[#f3f4f6]">{e.label}</span>
             <span className="flex items-center gap-2">
-              <span className="font-mono text-[10px] text-[#5a5379]">{e.key}</span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: e.set ? "#35d9a0" : "#8a82a6" }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: e.set ? "#35d9a0" : "#8a82a6" }} />{e.set ? "gesetzt" : "nicht gesetzt"}
+              <span className="font-mono text-[10px] text-[#6b7280]">{e.key}</span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: e.set ? "#86efac" : "#9ca3af" }}>
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: e.set ? "#86efac" : "#9ca3af" }} />{e.set ? "gesetzt" : "nicht gesetzt"}
               </span>
             </span>
           </div>
           <div className="flex gap-2.5">
             <input type={reveal[e.key] ? "text" : "password"} value={draft[e.key] ?? ""} autoComplete="off" onChange={(ev) => setDraft({ ...draft, [e.key]: ev.target.value })}
-              className="flex-1 rounded-[10px] border border-line2 bg-input px-3 py-2.5 font-mono text-[13px] tracking-wide text-ink outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(162,75,255,.16)]" />
+              className="flex-1 rounded-[10px] border border-line2 bg-input px-3 py-2.5 font-mono text-[13px] tracking-wide text-ink outline-none focus:border-accent focus:shadow-[0_0_0_3px_rgba(147,51,234,.16)]" />
             <button type="button" onClick={() => setReveal({ ...reveal, [e.key]: !reveal[e.key] })} title={reveal[e.key] ? "Verbergen" : "Anzeigen"}
-              className="flex w-[42px] flex-none items-center justify-center rounded-[10px] border border-[#2c2546] bg-input text-[#928bb0] transition hover:border-accent hover:bg-[#1c1730] hover:text-accentsoft">
+              className="flex w-[42px] flex-none items-center justify-center rounded-[10px] border border-[#374151] bg-input text-[#9ca3af] transition hover:border-accent hover:bg-[#111827] hover:text-accentsoft">
               {reveal[e.key] ? EyeOff : EyeOn}
             </button>
           </div>
