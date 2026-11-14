@@ -4,6 +4,9 @@ import react from "@vitejs/plugin-react";
 // Dev-Proxy: /api → lokales FastAPI-Backend (Port 8140). In Produktion
 // serviert FastAPI die gebaute SPA selbst, der Proxy wird dann nicht genutzt.
 export default defineConfig({
+  // Kanonisches Zuhause ist die Einbettung unter abgemiked.de/nicebot — alle Asset-
+  // und Router-Pfade laufen über diesen Base-Pfad (nginx strippt das Präfix wieder).
+  base: "/nicebot/",
   plugins: [react()],
   server: {
     proxy: {

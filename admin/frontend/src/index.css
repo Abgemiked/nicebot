@@ -8,25 +8,29 @@ body {
   padding: 0;
 }
 body {
-  background: #0a0814;
-  color: #ece9f6;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  background: #030712; /* gray-950 */
+  color: #d1d5db; /* gray-300 */
+  font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+::selection {
+  background: #9333ea; /* purple-600 */
+  color: #fff;
+}
 
-/* Scrollbar im Design-Stil */
+/* Scrollbar im abgemiked.de-Stil (Grautöne) */
 ::-webkit-scrollbar {
   width: 11px;
   height: 11px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2440;
+  background: #374151; /* gray-700 */
   border-radius: 8px;
   border: 3px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3358;
+  background: #4b5563; /* gray-600 */
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-track {
@@ -34,5 +38,5 @@ body {
 }
 input::placeholder,
 textarea::placeholder {
-  color: #5d567c;
+  color: #6b7280; /* gray-500 */
 }

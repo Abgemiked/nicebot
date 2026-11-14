@@ -33,10 +33,18 @@ class Settings:
     )
     DISCORD_API_BASE = "https://discord.com/api"
 
+    # Zentraler Auth-Service (SSO-Bridge für die Einbettung unter abgemiked.de/nicebot).
+    CENTRAL_AUTH_URL = os.environ.get("CENTRAL_AUTH_URL", "http://central-auth-backend:4150")
+
     @classmethod
     def public_origin(cls):
-        """Erlaubte Origin (Schema+Host) — abgeleitet aus der Redirect-URI.
-        Basis für den CSRF-Origin/Referer-Check."""
+        """Erlaubte Origin (Schema+Host) für den CSRF-Origin/Referer-Check.
+
+        Bevorzugt PUBLIC_ORIGIN (Einbettung → https://abgemiked.de), sonst
+        abgeleitet aus der OAuth-Redirect-URI (Standalone-Subdomain)."""
+        override = os.environ.get("PUBLIC_ORIGIN", "")
+        if override:
+            return override.rstrip("/")
         from urllib.parse import urlparse
         p = urlparse(cls.OAUTH_REDIRECT_URI)
         return f"{p.scheme}://{p.netloc}" if p.scheme and p.netloc else ""

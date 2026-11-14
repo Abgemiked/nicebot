@@ -7,25 +7,31 @@ intern im Docker-Netz (kein Host-Port-Mapping).
 import os
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 
 # Security-Header für alle Antworten (M8-Härtung).
 _SECURITY_HEADERS = {
+    # frame-ancestors 'self': same-origin-Einbettung unter abgemiked.de/nicebot
+    # (via Website-nginx-Proxy, gleicher Origin) ist erlaubt, Fremd-Framing nicht.
     "Content-Security-Policy": (
         "default-src 'self'; img-src 'self' data:; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
-        "script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; "
+        "script-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; "
         "form-action 'self' https://discord.com"
     ),
-    "X-Frame-Options": "DENY",
+    "X-Frame-Options": "SAMEORIGIN",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "no-referrer",
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
 }
+# Kanonisches Zuhause: abgemiked.de/nicebot. Direktzugriffe auf die alte Subdomain
+# werden dorthin umgeleitet (Framed-Requests kommen mit Host abgemiked.de → keine Umleitung).
+_LEGACY_HOST = "nicebot.abgemiked.de"
+_CANONICAL_URL = "https://abgemiked.de/nicebot"
 # Methoden, die einen CSRF-Origin-Check brauchen.
 _STATE_METHODS = {"POST", "PUT", "DELETE", "PATCH"}
 from .routes import (
@@ -45,6 +51,12 @@ app = FastAPI(title="nicebot-admin", version="0.1.0")
 
 @app.middleware("http")
 async def security_and_csrf(request: Request, call_next):
+    # Standalone-Subdomain → 301 auf das kanonische abgemiked.de/nicebot.
+    # Nur Dokument-/SPA-Navigation (nicht /api, /assets), damit nichts hart bricht.
+    host = (request.headers.get("host") or "").split(":")[0]
+    if host == _LEGACY_HOST and request.method in ("GET", "HEAD") \
+            and not request.url.path.startswith(("/api", "/assets")):
+        return RedirectResponse(_CANONICAL_URL, status_code=301)
     # CSRF: zustandsändernde /api-Requests müssen vom eigenen Origin kommen.
     if request.method in _STATE_METHODS and request.url.path.startswith("/api/"):
         allowed = settings.public_origin()

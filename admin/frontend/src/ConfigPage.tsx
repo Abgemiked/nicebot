@@ -81,11 +81,11 @@ export default function ConfigPage() {
   return (
     <div className="flex flex-col gap-5" onClick={() => setOpenSel(null)}>
       <div className="flex items-center justify-between">
-        <div className="flex gap-1.5 border-b border-[#211b38]">
+        <div className="flex gap-1.5 border-b border-[#1f2937]">
           {tabs.map((t) => (
             <button key={t} onClick={(e) => { e.stopPropagation(); setTab(t); setOpenSel(null); }}
-              className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-semibold ${tab === t ? "border-accent text-[#f1ecfb]" : "border-transparent text-[#9a93b4] hover:text-ink"}`}>
-              {t}<span className="font-mono text-[11px] text-[#6b6390]">{groups[t]?.length}</span>
+              className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-semibold ${tab === t ? "border-accent text-[#ffffff]" : "border-transparent text-[#9ca3af] hover:text-ink"}`}>
+              {t}<span className="font-mono text-[11px] text-[#9ca3af]">{groups[t]?.length}</span>
             </button>
           ))}
         </div>
@@ -98,16 +98,16 @@ export default function ConfigPage() {
         {fields.map((f) => (
           <div key={f.key} className={`${CARD} p-4`} onClick={(e) => e.stopPropagation()}>
             <div className="mb-[11px] flex items-center justify-between gap-2.5">
-              <span className="text-[13.5px] font-semibold text-[#e7e3f4]">{f.label}</span>
-              <span className="font-mono text-[9.5px] text-[#5a5379]">{f.key}</span>
+              <span className="text-[13.5px] font-semibold text-[#f3f4f6]">{f.label}</span>
+              <span className="font-mono text-[9.5px] text-[#6b7280]">{f.key}</span>
             </div>
             <FieldControl
               field={f} value={draft[f.key] ?? ""} channels={channels} roles={roles}
               open={openSel === f.key} onToggle={() => setOpenSel(openSel === f.key ? null : f.key)}
               onChange={(v) => setDraft({ ...draft, [f.key]: v })}
             />
-            {f.kind === "hostlist" && !fieldErrors[f.key] && <p className="mt-2 text-[11.5px] text-[#6f688c]">Mehrere durch Komma trennen.</p>}
-            {f.kind === "rolelist" && !fieldErrors[f.key] && <p className="mt-2 text-[11.5px] text-[#6f688c]">Mehrfachauswahl — gespeichert als ID-Liste.</p>}
+            {f.kind === "hostlist" && !fieldErrors[f.key] && <p className="mt-2 text-[11.5px] text-[#9ca3af]">Mehrere durch Komma trennen.</p>}
+            {f.kind === "rolelist" && !fieldErrors[f.key] && <p className="mt-2 text-[11.5px] text-[#9ca3af]">Mehrfachauswahl — gespeichert als ID-Liste.</p>}
             {data.restart_required_keys.includes(f.key) && (
               <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-warning">{Icon.restart}Wirkt erst nach Bot-Neustart.</p>
             )}
@@ -132,20 +132,20 @@ function FieldControl({ field, value, channels, roles, open, onToggle, onChange 
   if ((isChannel && channels.length > 0) || (isRole && roles.length > 0)) {
     const opts = isRole
       ? roles.map((r) => ({ id: r.id, name: "@" + r.name, color: roleColor(r.name) }))
-      : channelsForKind(kind, channels).map((c) => ({ id: c.id, name: "#" + c.name, color: "#a24bff" }));
+      : channelsForKind(kind, channels).map((c) => ({ id: c.id, name: "#" + c.name, color: "#9333ea" }));
     const sel = opts.find((o) => o.id === value);
     return (
       <div className="relative">
-        <button onClick={onToggle} className="flex w-full items-center justify-between gap-2 rounded-[10px] border border-line2 bg-input px-3 py-2.5 transition hover:border-[#3a3358]">
+        <button onClick={onToggle} className="flex w-full items-center justify-between gap-2 rounded-[10px] border border-line2 bg-input px-3 py-2.5 transition hover:border-[#4b5563]">
           <span className="flex min-w-0 items-center gap-2.5">
-            <span className="h-2 w-2 flex-none rounded-full" style={{ background: sel ? sel.color : "#5d567c" }} />
-            <span className="truncate text-sm font-medium" style={{ color: sel ? "#d8d2ec" : "#6f688c" }}>{sel ? sel.name : "— nicht gesetzt —"}</span>
+            <span className="h-2 w-2 flex-none rounded-full" style={{ background: sel ? sel.color : "#6b7280" }} />
+            <span className="truncate text-sm font-medium" style={{ color: sel ? "#e5e7eb" : "#9ca3af" }}>{sel ? sel.name : "— nicht gesetzt —"}</span>
           </span>
-          <span className="flex-none text-[#7d76a0]">{Icon.chevron}</span>
+          <span className="flex-none text-[#9ca3af]">{Icon.chevron}</span>
         </button>
         {open && (
           <Popover>
-            <Opt color="#5d567c" name="— nicht gesetzt —" selected={!value} onPick={() => { onChange(""); onToggle(); }} />
+            <Opt color="#6b7280" name="— nicht gesetzt —" selected={!value} onPick={() => { onChange(""); onToggle(); }} />
             {opts.map((o) => (
               <Opt key={o.id} color={o.color} name={o.name} selected={o.id === value} onPick={() => { onChange(o.id); onToggle(); }} />
             ))}
@@ -176,7 +176,7 @@ function FieldControl({ field, value, channels, roles, open, onToggle, onChange 
               </span>
             );
           })}
-          <button onClick={onToggle} className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[#3a3358] px-2.5 py-[5px] text-[12.5px] font-semibold text-muted transition hover:border-accent hover:text-accentsoft">{Icon.plus}Rolle</button>
+          <button onClick={onToggle} className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[#4b5563] px-2.5 py-[5px] text-[12.5px] font-semibold text-muted transition hover:border-accent hover:text-accentsoft">{Icon.plus}Rolle</button>
         </div>
         {open && (
           <Popover>
@@ -184,12 +184,12 @@ function FieldControl({ field, value, channels, roles, open, onToggle, onChange 
               const c = roleColor(r.name);
               const on = selected.has(r.id);
               return (
-                <button key={r.id} onClick={() => toggle(r.id)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left hover:bg-[#241d3a]">
-                  <span className="flex h-[17px] w-[17px] flex-none items-center justify-center rounded-[5px] border-[1.5px]" style={{ borderColor: on ? "#a24bff" : "#3a3358", background: on ? "#a24bff" : "transparent" }}>
+                <button key={r.id} onClick={() => toggle(r.id)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left hover:bg-[#1f2937]">
+                  <span className="flex h-[17px] w-[17px] flex-none items-center justify-center rounded-[5px] border-[1.5px]" style={{ borderColor: on ? "#9333ea" : "#4b5563", background: on ? "#9333ea" : "transparent" }}>
                     {on && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>}
                   </span>
                   <span className="h-2 w-2 flex-none rounded-full" style={{ background: c }} />
-                  <span className="flex-1 text-[13.5px] text-[#d8d2ec]">@{r.name}</span>
+                  <span className="flex-1 text-[13.5px] text-[#e5e7eb]">@{r.name}</span>
                 </button>
               );
             })}
@@ -210,7 +210,7 @@ function FieldControl({ field, value, channels, roles, open, onToggle, onChange 
 
 function Popover({ children }: { children: ReactNode }) {
   return (
-    <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 max-h-60 animate-fIn overflow-y-auto rounded-xl border border-[#322a4d] bg-raised p-1.5 shadow-[0_24px_48px_-16px_rgba(0,0,0,.85)]">
+    <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 max-h-60 animate-fIn overflow-y-auto rounded-xl border border-[#374151] bg-raised p-1.5 shadow-[0_24px_48px_-16px_rgba(0,0,0,.85)]">
       {children}
     </div>
   );
@@ -218,9 +218,9 @@ function Popover({ children }: { children: ReactNode }) {
 
 function Opt({ color, name, selected, onPick }: { color: string; name: string; selected: boolean; onPick: () => void }) {
   return (
-    <button onClick={onPick} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left hover:bg-[#241d3a]">
+    <button onClick={onPick} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left hover:bg-[#1f2937]">
       <span className="h-2 w-2 flex-none rounded-full" style={{ background: color }} />
-      <span className="flex-1 truncate text-[13.5px] text-[#d8d2ec]">{name}</span>
+      <span className="flex-1 truncate text-[13.5px] text-[#e5e7eb]">{name}</span>
       {selected && <span className="text-accentsoft">{Icon.check}</span>}
     </button>
   );

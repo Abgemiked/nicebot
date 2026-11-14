@@ -11,16 +11,22 @@ export interface Me {
   permissions: Permissions;
 }
 
+// Base-Pfad der App. Standalone = "/", eingebettet unter abgemiked.de = "/nicebot".
+// Alle API-Aufrufe MÜSSEN darüber laufen, sonst treffen sie unter der Einbettung
+// die Website-API statt nicebot-admin.
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const apiUrl = (path: string) => `${BASE}${path}`;
+
 /** Lädt die eigene Identität. null = nicht angemeldet (401) oder kein Zugriff (403). */
 export async function fetchMe(): Promise<Me | null> {
-  const res = await fetch("/api/me", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/me"), { credentials: "same-origin" });
   if (res.status === 401 || res.status === 403) return null;
   if (!res.ok) throw new Error(`Unerwarteter Fehler: ${res.status}`);
   return res.json();
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+  await fetch(apiUrl("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
 }
 
 // --- Streamer-Verwaltung (M6) ---
@@ -32,7 +38,7 @@ export interface Streamer {
 }
 
 export async function fetchStreamers(): Promise<Streamer[]> {
-  const res = await fetch("/api/streamers", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/streamers"), { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Streamer nicht ladbar (${res.status})`);
   return (await res.json()).streamers ?? [];
 }
@@ -46,7 +52,7 @@ export async function deleteStreamer(name: string): Promise<SaveResult> {
 }
 
 async function streamerWrite(method: string, name: string): Promise<SaveResult> {
-  const res = await fetch("/api/streamers", {
+  const res = await fetch(apiUrl("/api/streamers"), {
     method,
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
@@ -87,7 +93,7 @@ export async function fetchMembers(params: {
   if (params.search) q.set("search", params.search);
   q.set("page", String(params.page ?? 1));
   q.set("page_size", String(params.page_size ?? 25));
-  const res = await fetch(`/api/members?${q.toString()}`, { credentials: "same-origin" });
+  const res = await fetch(apiUrl(`/api/members?${q.toString()}`), { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Mitglieder nicht ladbar (${res.status})`);
   return res.json();
 }
@@ -102,7 +108,7 @@ export interface SecretEntry {
 }
 
 export async function fetchSecrets(): Promise<SecretEntry[]> {
-  const res = await fetch("/api/secrets", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/secrets"), { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Secrets nicht ladbar (${res.status})`);
   return (await res.json()).secrets ?? [];
 }
@@ -110,7 +116,7 @@ export async function fetchSecrets(): Promise<SecretEntry[]> {
 export async function saveSecrets(
   updates: Record<string, string>
 ): Promise<SaveResult & { restartRequired?: boolean }> {
-  const res = await fetch("/api/secrets", {
+  const res = await fetch(apiUrl("/api/secrets"), {
     method: "PUT",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
@@ -144,13 +150,13 @@ export interface DiscordRole {
 }
 
 export async function fetchChannels(): Promise<DiscordChannel[]> {
-  const res = await fetch("/api/discord/channels", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/discord/channels"), { credentials: "same-origin" });
   if (!res.ok) return []; // Bot evtl. weg → Felder fallen auf Texteingabe zurück
   return (await res.json()).channels ?? [];
 }
 
 export async function fetchRoles(): Promise<DiscordRole[]> {
-  const res = await fetch("/api/discord/roles", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/discord/roles"), { credentials: "same-origin" });
   if (!res.ok) return [];
   return (await res.json()).roles ?? [];
 }
@@ -186,7 +192,7 @@ export async function fetchAudit(params: {
   if (params.event_type) q.set("event_type", params.event_type);
   q.set("page", String(params.page ?? 1));
   q.set("page_size", String(params.page_size ?? 25));
-  const res = await fetch(`/api/audit?${q.toString()}`, { credentials: "same-origin" });
+  const res = await fetch(apiUrl(`/api/audit?${q.toString()}`), { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Audit-Log konnte nicht geladen werden (${res.status})`);
   return res.json();
 }
@@ -198,7 +204,7 @@ export interface Stats {
 }
 
 export async function fetchStats(): Promise<Stats | null> {
-  const res = await fetch("/api/stats", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/stats"), { credentials: "same-origin" });
   if (!res.ok) return null; // Bot evtl. nicht erreichbar — Seite bleibt nutzbar
   return res.json();
 }
@@ -223,7 +229,7 @@ export interface ConfigResponse {
 }
 
 export async function fetchConfig(): Promise<ConfigResponse> {
-  const res = await fetch("/api/config", { credentials: "same-origin" });
+  const res = await fetch(apiUrl("/api/config"), { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Konfiguration konnte nicht geladen werden (${res.status})`);
   return res.json();
 }
@@ -264,7 +270,7 @@ export async function fetchLevels(params: {
   if (params.direction) q.set("direction", params.direction);
   q.set("page", String(params.page ?? 1));
   q.set("page_size", String(params.page_size ?? 25));
-  const res = await fetch(`/api/levels?${q.toString()}`, { credentials: "same-origin" });
+  const res = await fetch(apiUrl(`/api/levels?${q.toString()}`), { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Rangliste konnte nicht geladen werden (${res.status})`);
   return res.json();
 }
@@ -274,7 +280,7 @@ export async function updateLevel(
   level: number,
   exp: number
 ): Promise<SaveResult> {
-  const res = await fetch(`/api/levels/${userId}`, {
+  const res = await fetch(apiUrl(`/api/levels/${userId}`), {
     method: "PUT",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
@@ -291,7 +297,7 @@ export async function updateLevel(
 }
 
 export async function saveConfig(updates: Record<string, unknown>): Promise<SaveResult> {
-  const res = await fetch("/api/config", {
+  const res = await fetch(apiUrl("/api/config"), {
     method: "PUT",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
