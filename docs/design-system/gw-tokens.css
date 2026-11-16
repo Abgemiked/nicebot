@@ -1,0 +1,170 @@
+/*
+ * KOPIE zur Dokumentation. Massgebliche Quelle: client/src/styles/gw-tokens.css im Repo Abgemiked/website-abgemiked.
+ * Bei Abweichung gilt die Quelle. Nicht von Hand aendern; Tools uebernehmen diese Datei 1:1 oder verweisen auf die Quelle.
+ */
+/*
+ * Gewinnspiel-Design: Tokens (Hell + Dunkel). Alles unter der Wurzelklasse .gw-theme, damit der Rest der Website unveraendert bleibt.
+ * Namen folgen dem Designsystem (plum, brand, mint, surface-*, text-*, radius-*); das Website-Redesign kann diese Datei uebernehmen.
+ * Dunkel: automatisch per prefers-color-scheme, erzwingbar per data-theme="dark" (auf .gw-theme oder einem Vorfahren, z. B. <html>).
+ * Globale Quelle (Redesign): <html data-theme="light|dark"> setzt dieselben Tokens auch ausserhalb von .gw-theme (eine Hex-Quelle). Ohne data-theme am Wurzelelement bleibt alles wie bisher.
+ * Hell-Erzwingung: data-theme="light" auf <html> ODER auf .gw-theme gewinnt auch bei dunklem System (Selektor prueft beide Ebenen).
+ * Kontraste (WCAG AA) sichert client/src/__tests__/gwTokensContrast.test.ts ab.
+ */
+.gw-theme,
+:root[data-theme] {
+  --gw-font-body: "Nunito Sans Variable", "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gw-font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Nunito Sans Variable", system-ui, sans-serif;
+
+  /* Marke */
+  --gw-plum: #14061b;
+  --gw-plum-2: #24102f;
+  --gw-brand: #6c5ce7;
+  --gw-brand-strong: #5b49d6;
+  --gw-brand-container: #e3deff;
+  --gw-on-brand-container: #352297;
+  --gw-brand-soft: #eeebff;
+  --gw-brand-text: #4b3bc9;
+  --gw-mint: #19a67f; /* war #34e0b2 (zu grell, Mike 2026-11-16) */
+  --gw-mint-strong: #169873; /* war #1fc79c */
+  --gw-on-mint: #04241e;
+  --gw-mint-container: #cdf5e6;
+  --gw-on-mint-container: #064e40;
+  --gw-mint-soft: #daf6ee;
+  --gw-mint-text: #05705c;
+  --gw-yellow: #ffd60a;
+  --gw-yellow-container: #fff3b0;
+  --gw-on-yellow-container: #5c4400;
+
+  /* Flaechen und Text */
+  --gw-surface-base: #f6f5fb;
+  --gw-surface-card: #ffffff;
+  --gw-surface-sunk: #eeecf7;
+  --gw-surface-input: #ffffff;
+  --gw-border-subtle: #e6e3f2;
+  --gw-border-control: #6b6880;
+  --gw-text-strong: #15131f;
+  --gw-text: #2a2740;
+  --gw-text-muted: #5c5878;
+  --gw-on-hero: #ffffff;
+  --gw-hero-muted: #e6e0f5;
+  --gw-hero-chip: #24102f;
+  --gw-focus: #6c5ce7;
+  /* Live-Kennzeichnung (Chip): weisse Schrift auf Rot, 4.7:1 */
+  --gw-live-fill: #e11d48;
+
+  /* Status (immer Wort + Farbe + Symbol) */
+  --gw-ok: #15803d;
+  --gw-ok-surface: #dcfce7;
+  --gw-on-ok-note: #14532d;
+  --gw-warn: #92400e;
+  --gw-warn-surface: #fef3c7;
+  --gw-on-warn-note: #78350f;
+  --gw-danger: #be123c;
+  --gw-danger-surface: #ffe4e8;
+  --gw-danger-fill: #e11d48;
+  --gw-on-danger-note: #9f1239;
+  --gw-info: #1d4ed8;
+  --gw-info-surface: #dbeafe;
+  --gw-on-info-note: #1e3a8a;
+
+  /* Form */
+  --gw-radius-card: 28px;
+  --gw-radius-tile: 22px;
+  --gw-radius-note: 18px;
+  --gw-radius-input: 16px;
+  --gw-radius-pill: 9999px;
+  --gw-shadow-card: 0 10px 28px -10px rgba(40, 20, 90, 0.45);
+  --gw-shadow-modal: 0 20px 48px -8px rgba(40, 20, 90, 0.4);
+  --gw-tap: 44px;
+
+  color-scheme: light;
+}
+
+/* Dunkel: Pflaumen-Toene. Marken-Flaechen (Hero, Mint-Knopf, Mesh) bleiben gleich. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .gw-theme:not([data-theme="light"]) {
+    --gw-brand: #8b7bf2;
+    --gw-brand-strong: #5b49d6;
+    --gw-brand-container: #3b2c7a;
+    --gw-on-brand-container: #e3deff;
+    --gw-brand-soft: #2e2160;
+    --gw-brand-text: #c4b8ff;
+    --gw-mint-container: #0f4a3d;
+    --gw-on-mint-container: #bff3e2;
+    --gw-mint-soft: #0d3a31;
+    --gw-mint-text: #5eeac4;
+    --gw-yellow-container: #4d3d00;
+    --gw-on-yellow-container: #ffe777;
+    --gw-surface-base: #14061b;
+    --gw-surface-card: #24102f;
+    --gw-surface-sunk: #1b0c25;
+    --gw-surface-input: #1b0c25;
+    --gw-border-subtle: #3d2a52;
+    --gw-border-control: #9a8fb8;
+    --gw-text-strong: #f6f2fc;
+    --gw-text: #e4dcf2;
+    --gw-text-muted: #b9aed1;
+    --gw-hero-chip: #3a2250;
+    --gw-focus: #c4b8ff;
+    --gw-ok: #6ee7a8;
+    --gw-ok-surface: #0f3a26;
+    --gw-on-ok-note: #c7f5dc;
+    --gw-warn: #fcd34d;
+    --gw-warn-surface: #473a0c;
+    --gw-on-warn-note: #fde9a6;
+    --gw-danger: #ff8aa5;
+    --gw-danger-surface: #4a1426;
+    --gw-danger-fill: #e11d48;
+    --gw-on-danger-note: #ffc2d0;
+    --gw-info: #9ec2ff;
+    --gw-info-surface: #14284f;
+    --gw-on-info-note: #cfe0ff;
+    --gw-shadow-card: 0 10px 28px -10px rgba(0, 0, 0, 0.6);
+    --gw-shadow-modal: 0 20px 48px -8px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] .gw-theme,
+.gw-theme[data-theme="dark"],
+:root[data-theme="dark"] {
+  --gw-brand: #8b7bf2;
+  --gw-brand-strong: #5b49d6;
+  --gw-brand-container: #3b2c7a;
+  --gw-on-brand-container: #e3deff;
+  --gw-brand-soft: #2e2160;
+  --gw-brand-text: #c4b8ff;
+  --gw-mint-container: #0f4a3d;
+  --gw-on-mint-container: #bff3e2;
+  --gw-mint-soft: #0d3a31;
+  --gw-mint-text: #5eeac4;
+  --gw-yellow-container: #4d3d00;
+  --gw-on-yellow-container: #ffe777;
+  --gw-surface-base: #14061b;
+  --gw-surface-card: #24102f;
+  --gw-surface-sunk: #1b0c25;
+  --gw-surface-input: #1b0c25;
+  --gw-border-subtle: #3d2a52;
+  --gw-border-control: #9a8fb8;
+  --gw-text-strong: #f6f2fc;
+  --gw-text: #e4dcf2;
+  --gw-text-muted: #b9aed1;
+  --gw-hero-chip: #3a2250;
+  --gw-focus: #c4b8ff;
+  --gw-ok: #6ee7a8;
+  --gw-ok-surface: #0f3a26;
+  --gw-on-ok-note: #c7f5dc;
+  --gw-warn: #fcd34d;
+  --gw-warn-surface: #473a0c;
+  --gw-on-warn-note: #fde9a6;
+  --gw-danger: #ff8aa5;
+  --gw-danger-surface: #4a1426;
+  --gw-danger-fill: #e11d48;
+  --gw-on-danger-note: #ffc2d0;
+  --gw-info: #9ec2ff;
+  --gw-info-surface: #14284f;
+  --gw-on-info-note: #cfe0ff;
+  --gw-shadow-card: 0 10px 28px -10px rgba(0, 0, 0, 0.6);
+  --gw-shadow-modal: 0 20px 48px -8px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
