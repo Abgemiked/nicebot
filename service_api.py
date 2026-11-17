@@ -115,6 +115,7 @@ from aiohttp import web
 
 import audit_log
 from commands.streamer import streamer_core
+from mass_role import register_routes as register_mass_role_routes
 
 DEFAULT_PORT = 8130
 
@@ -1369,6 +1370,8 @@ def create_service_app(cfg_json, bot):
     )
     # Batch 3: generische DM (Beitritts-Anfrage-Benachrichtigung an Leader)
     app.router.add_post("/internal/dm", send_direct_message)
+    # Massen-Rollenvergabe (NiceBot-Verwaltung, Voll-Admin)
+    register_mass_role_routes(app, cfg_json, bot, _token_ok)
     return app
 
 
