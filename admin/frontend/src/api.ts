@@ -336,6 +336,7 @@ export interface MassRole {
 export interface MassRolePreview {
   blocked: MassRoleBlock | null;
   role_name?: string;
+  channel_overwrites?: string[];
   total_targets: number;
   already_have: number;
   will_receive: number;

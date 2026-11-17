@@ -365,7 +365,7 @@ def test_http_endpoints():
             r = await c.post("/internal/mass-role/start", data="kein json", headers=H)
             assert r.status == 400
             r = await c.post("/internal/mass-role/start",
-                             json={"role_id": "50001", "confirm_count": 5, "actor_id": "7", "actor_name": "M"},
+                             json={"role_id": "50001", "confirm_count": 5, "actor_id": "70001", "actor_name": "M"},
                              headers=H)
             assert r.status == 200
             await mgr._task
@@ -381,6 +381,60 @@ def test_http_endpoints():
         # Echte Service-App enthält die Routen
         paths = {res.canonical for res in app.router.resources()}
         assert "/internal/mass-role/start" in paths and "/internal/roles/detail" in paths
+    run(go())
+
+
+def test_extra_dangerous_perms_blocked():
+    async def go():
+        for perm in ("manage_events", "view_audit_log", "move_members", "manage_threads"):
+            mgr, g, role, *_ = make(perms=FakePerms(**{perm: True}))
+            assert _blocked(mgr)["code"] == "role_dangerous", perm
+    run(go())
+
+
+def test_role_deleted_mid_job_aborts():
+    async def go():
+        members = [FakeMember(4000 + i, f"u{i}") for i in range(5)]
+        for m in members:
+            m.error = discord.NotFound(SimpleNamespace(status=404, reason="x"), {"code": 10011, "message": "Unknown Role"})
+        mgr, g, role, members, _ = make(members=members)
+        j = await _start_and_wait(mgr, role, 5)
+        assert j["status"] == "failed" and "existiert nicht mehr" in j["note"]
+    run(go())
+
+
+def test_4xx_not_retried():
+    async def go():
+        mgr, g, role, members, _ = make()
+        members[0].error = discord.HTTPException(_resp(400), "bad")
+        j = await _start_and_wait(mgr, role, 5)
+        assert members[0].calls == 1 and j["failed"] == 1
+    run(go())
+
+
+def test_incomplete_member_cache_blocks():
+    async def go():
+        mgr, g, role, *_ = make()
+        g.member_count = 500       # Cache kennt nur 5
+        try:
+            mgr.preview("50001", False)
+        except MassRoleError as e:
+            assert e.status == 503 and e.payload["code"] == "members_incomplete"
+        else:
+            raise AssertionError
+    run(go())
+
+
+def test_include_bots_must_be_bool():
+    async def go():
+        mgr, g, role, *_ = make()
+        app = __import__("aiohttp").web.Application()
+        mass_role.register_routes(app, {"TURNIER_SERVICE_TOKEN": TOKEN, "GUILD_ID": GUILD_ID}, mgr.bot,
+                                  lambda r, e: r.headers.get("X-Service-Token") == e, manager=mgr)
+        async with TestClient(TestServer(app)) as c:
+            r = await c.post("/internal/mass-role/preview", json={"role_id": "50001", "include_bots": "false"},
+                             headers={"X-Service-Token": TOKEN})
+            assert r.status == 400
     run(go())
 
 

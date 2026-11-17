@@ -48,6 +48,13 @@ def _role_id(payload):
     return rid
 
 
+def _include_bots(payload):
+    v = (payload or {}).get("include_bots", False)
+    if not isinstance(v, bool):
+        raise HTTPException(status_code=400, detail={"code": "bad_request", "message": "include_bots muss true/false sein"})
+    return v
+
+
 @router.get("/roles")
 async def get_roles(user=Depends(require_full_admin_live)):
     try:
@@ -59,7 +66,7 @@ async def get_roles(user=Depends(require_full_admin_live)):
 @router.post("/preview")
 async def preview(payload: dict = Body(...), user=Depends(require_full_admin_live)):
     return await _call("POST", "/internal/mass-role/preview",
-                       {"role_id": _role_id(payload), "include_bots": bool(payload.get("include_bots", False))})
+                       {"role_id": _role_id(payload), "include_bots": _include_bots(payload)})
 
 
 @router.post("/start")
@@ -69,7 +76,7 @@ async def start(payload: dict = Body(...), user=Depends(require_full_admin_live)
         raise HTTPException(status_code=400, detail={"code": "bad_request", "message": "confirm_count fehlt"})
     return await _call("POST", "/internal/mass-role/start", {
         "role_id": _role_id(payload),
-        "include_bots": bool(payload.get("include_bots", False)),
+        "include_bots": _include_bots(payload),
         "confirm_count": cc,
         "actor_id": user.get("discord_id"),
         "actor_name": user.get("username"),
