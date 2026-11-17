@@ -8,6 +8,7 @@ import AuditPage from "./AuditPage";
 import SecretsPage from "./SecretsPage";
 import StreamerPage from "./StreamerPage";
 import MemberPage from "./MemberPage";
+import MassRolePage from "./MassRolePage";
 
 const LOGO = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg>
@@ -34,6 +35,7 @@ const PAGE_META: Record<string, [string, string]> = {
   "/mitglieder": ["Mitglieder", "Alle Server-Mitglieder mit ihren Rollen"],
   "/logs": ["Logs & Statistiken", "Audit-Log und Kennzahlen des Servers"],
   "/secrets": ["Secrets", "Laufzeit-Geheimnisse aus der .env (nur Voll-Admin)"],
+  "/massenrolle": ["Massen-Rolle", "Eine Rolle an alle Server-Mitglieder vergeben"],
 };
 
 export default function App() {
@@ -62,6 +64,7 @@ export default function App() {
           <Route path="mitglieder" element={<MemberPage />} />
           <Route path="logs" element={<AuditPage />} />
           <Route path="secrets" element={fullAdmin ? <SecretsPage /> : <Navigate to="/konfiguration" replace />} />
+          <Route path="massenrolle" element={fullAdmin ? <MassRolePage /> : <Navigate to="/konfiguration" replace />} />
           <Route path="*" element={<Navigate to="/konfiguration" replace />} />
         </Route>
       </Routes>
@@ -139,6 +142,7 @@ function Layout({ me, fullAdmin }: { me: Me; fullAdmin: boolean }) {
           {fullAdmin && (
             <>
               <SectionLabel>Administration</SectionLabel>
+              <NavItem to="/massenrolle" icon={NAV_ICON.mitglieder} label="Massen-Rolle" badge="ADMIN" />
               <NavItem to="/secrets" icon={NAV_ICON.secrets} label="Secrets" badge="ADMIN" />
             </>
           )}

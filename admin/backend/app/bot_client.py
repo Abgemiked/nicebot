@@ -128,3 +128,14 @@ async def fetch_members(search=None, page=1, page_size=25):
     q.append(f"page={int(page)}")
     q.append(f"page_size={int(page_size)}")
     return await _get_json("/internal/guild-members?" + "&".join(q))
+
+
+# --- Massen-Rollenvergabe ---
+
+async def massrole_roles():
+    return (await _get_json("/internal/roles/detail")).get("roles", [])
+
+
+async def massrole_request(method, path, json_body=None):
+    """Wie _request, aber für /internal/mass-role/* (HTTP-Status wird durchgereicht)."""
+    return await _request(method, path, json_body)
