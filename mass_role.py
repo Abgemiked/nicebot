@@ -44,7 +44,18 @@ DANGEROUS_PERMS = {
     "moderate_members": "Mitglieder timeouten",
     "manage_nicknames": "Nicknames verwalten",
     "manage_expressions": "Emojis/Sticker verwalten",
+    "manage_events": "Events verwalten",
+    "manage_threads": "Threads verwalten",
+    "view_audit_log": "Audit-Log ansehen",
+    "mute_members": "Mitglieder stummschalten",
+    "deafen_members": "Mitglieder taubschalten",
+    "move_members": "Mitglieder verschieben",
 }
+
+# Tippfehler/fehlende Attribute dürfen nicht still durchrutschen.
+for _attr in DANGEROUS_PERMS:
+    if not hasattr(discord.Permissions, _attr):
+        raise RuntimeError(f"mass_role: unbekanntes Recht {_attr!r} in DANGEROUS_PERMS")
 
 # Rollen, die Zugriff auf die Verwaltung geben (Default = RBAC der Verwaltung);
 # per ENV überschreibbar. Zusätzlich ALLOWED_ROLE_IDS/DC_MOD_ROLE_IDS aus config.
@@ -119,6 +130,8 @@ def role_block(guild, role, privileged_ids):
     if role is None or role == guild.default_role or getattr(role, "managed", False):
         return _block("role_invalid", "Rolle nicht gefunden oder von einer Integration verwaltet.")
     me = guild.me
+    if me is None:
+        return _block("guild_unavailable", "Bot-Mitglied nicht verfügbar (Guild nicht bereit).")
     if not me.guild_permissions.manage_roles:
         return _block("bot_no_manage_roles", "Der Bot hat das Recht „Rollen verwalten“ nicht.")
     if role >= me.top_role:
@@ -144,6 +157,12 @@ def role_block(guild, role, privileged_ids):
     return None
 
 
+def _members_complete(guild):
+    """False, wenn der Member-Cache offensichtlich unvollständig ist."""
+    count = getattr(guild, "member_count", None)
+    return not (isinstance(count, int) and count and len(guild.members) < count * 0.98)
+
+
 def compute_targets(guild, role, include_bots):
     """→ (targets: Mitglieder, die die Rolle noch NICHT haben, already_have:int, total:int)."""
     members = [m for m in guild.members if include_bots or not m.bot]
@@ -155,6 +174,10 @@ def compute_targets(guild, role, include_bots):
 
 def _valid_snowflake(value):
     return isinstance(value, str) and value.isdigit() and 5 <= len(value) <= 25
+
+
+class RoleGone(Exception):
+    """Zielrolle wurde während des Jobs gelöscht."""
 
 
 class MassRoleError(Exception):
@@ -174,13 +197,15 @@ class MassRoleManager:
         self._running_id = None
         self._cancel = False
         self._recovered = False
-        self._errors = []  # Fehlerauszug des laufenden/letzten Jobs
+        self._schema_ok = False
 
     # ---- DB ----
     def _conn(self):
         conn = sqlite3.connect(self.db_path, timeout=5.0)
         conn.row_factory = sqlite3.Row
-        conn.executescript(_SCHEMA)
+        if not self._schema_ok:
+            conn.executescript(_SCHEMA)
+            self._schema_ok = True
         return conn
 
     def _exec(self, sql, params=(), fetch=None):
@@ -210,6 +235,12 @@ class MassRoleManager:
             raise MassRoleError(503, _block("guild_unavailable", "Guild nicht verfügbar"))
         return guild
 
+    def _require_complete(self, guild):
+        if not _members_complete(guild):
+            raise MassRoleError(503, _block(
+                "members_incomplete",
+                "Die Mitgliederliste des Bots ist noch nicht vollständig geladen — bitte kurz warten und neu laden."))
+
     def _role_and_check(self, guild, role_id):
         if not _valid_snowflake(role_id):
             raise MassRoleError(400, _block("role_invalid", "Ungültige Rollen-ID"))
@@ -222,6 +253,10 @@ class MassRoleManager:
     def roles_detail(self):
         guild = self._guild()
         priv = _privileged_ids(self.cfg)
+        counts = {}
+        for m in guild.members:
+            for r in m.roles:
+                counts[r.id] = counts.get(r.id, 0) + 1
         out = []
         for r in guild.roles:
             if r == guild.default_role or getattr(r, "managed", False):
@@ -231,11 +266,24 @@ class MassRoleManager:
                 "id": str(r.id), "name": r.name,
                 "color": "#%06x" % r.color.value if getattr(r, "color", None) else "#000000",
                 "position": r.position,
-                "member_count": len(r.members),
+                "member_count": counts.get(r.id, 0),
                 "blocked": blk,
             })
         out.sort(key=lambda x: -x["position"])
         return out
+
+    @staticmethod
+    def _overwrite_channels(guild, role):
+        """Kanäle mit explizitem Zugriffs-Overwrite der Rolle (Hinweis, kein Block)."""
+        names = []
+        for ch in getattr(guild, "channels", []):
+            ow = getattr(ch, "overwrites", {}).get(role)
+            if ow is None:
+                continue
+            allow, _deny = ow.pair()
+            if allow.value:
+                names.append(ch.name)
+        return names[:10]
 
     def preview(self, role_id, include_bots):
         guild = self._guild()
@@ -245,8 +293,9 @@ class MassRoleManager:
         blk = role_block(guild, role, _privileged_ids(self.cfg))
         if blk:
             return {"blocked": blk, "total_targets": 0, "already_have": 0, "will_receive": 0}
+        self._require_complete(guild)
         targets, have, total = compute_targets(guild, role, include_bots)
-        return {"blocked": None, "role_name": role.name, "total_targets": total,
+        return {"blocked": None, "channel_overwrites": self._overwrite_channels(guild, role), "role_name": role.name, "total_targets": total,
                 "already_have": have, "will_receive": len(targets)}
 
     # ---- Job-Status ----
@@ -291,6 +340,7 @@ class MassRoleManager:
             raise MassRoleError(409, _block("job_running", "Es läuft bereits eine Massen-Vergabe."))
         guild = self._guild()
         role = self._role_and_check(guild, role_id)
+        self._require_complete(guild)
         targets, have, total = compute_targets(guild, role, include_bots)
         if confirm_count != len(targets):
             raise MassRoleError(409, _block(
@@ -339,7 +389,6 @@ class MassRoleManager:
     def _launch(self, job_id):
         self._cancel = False
         self._running_id = job_id
-        self._errors = []
         self._task = asyncio.ensure_future(self._run(job_id))
 
     # ---- Engine ----
@@ -386,15 +435,23 @@ class MassRoleManager:
                     consecutive_forbidden = 0
                 if result == "ok":
                     await self._sleep(PAUSE_PER_CALL)
+        except RoleGone:
+            status, note = "failed", "Die Zielrolle existiert nicht mehr"
         except asyncio.CancelledError:
             status, note = "interrupted", "Task beendet"
             raise
         except Exception as exc:  # noqa: BLE001 — Job darf nie still hängen bleiben
             status, note = "failed", f"Interner Fehler: {exc}"
         finally:
-            self._exec("UPDATE mass_role_jobs SET status=?, finished_at=?, note=? WHERE id=?",
-                       (status, _now(), note, job_id))
             self._running_id = None
+            for attempt in range(3):
+                try:
+                    self._exec("UPDATE mass_role_jobs SET status=?, finished_at=?, note=? WHERE id=?",
+                               (status, _now(), note, job_id))
+                    break
+                except Exception as exc:  # noqa: BLE001 — z. B. database is locked
+                    print(f"[mass_role] Abschluss-Update fehlgeschlagen ({attempt + 1}/3): {exc}")
+                    await self._sleep(1.0)
             self._audit("end", job_id)
             await self._log_channel(job_id)
 
@@ -410,12 +467,17 @@ class MassRoleManager:
             try:
                 await member.add_roles(role, reason=reason)
                 return "ok", None
-            except discord.NotFound:
+            except discord.NotFound as exc:
+                if getattr(exc, "code", None) == 10011:   # Unknown Role
+                    raise RoleGone() from exc
                 return "skipped", "nicht mehr auf dem Server"
             except discord.Forbidden:
                 return "failed", "Forbidden"
             except discord.HTTPException as exc:
-                last = f"Discord-Fehler: {getattr(exc, 'status', '?')}"
+                status = getattr(exc, "status", 0) or 0
+                last = f"Discord-Fehler: {status}"
+                if not (status >= 500 or status == 429):
+                    break
                 if attempt < RETRIES - 1:
                     await self._sleep(BACKOFF_BASE * (2 ** attempt))
         return "failed", last
@@ -477,6 +539,9 @@ def register_routes(app, cfg_json, bot, token_ok, manager=None):
                 return web.json_response(fn(request, body))
             except MassRoleError as exc:
                 return web.json_response(exc.payload, status=exc.status)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[mass_role] Handler-Fehler: {exc!r}")
+                return web.json_response(_block("internal", "Interner Fehler"), status=500)
         return handler
 
     def _job_id(request):
@@ -485,18 +550,27 @@ def register_routes(app, cfg_json, bot, token_ok, manager=None):
             raise MassRoleError(400, _block("bad_id", "Ungültige Job-ID"))
         return int(raw)
 
+    def _bots(body):
+        v = body.get("include_bots", False)
+        if not isinstance(v, bool):
+            raise MassRoleError(400, _block("bad_request", "include_bots muss true/false sein"))
+        return v
+
     def roles_detail(request, body):
         return {"roles": mgr.roles_detail()}
 
     def preview(request, body):
-        return mgr.preview(body.get("role_id"), bool(body.get("include_bots", False)))
+        return mgr.preview(body.get("role_id"), _bots(body))
 
     def start(request, body):
         cc = body.get("confirm_count")
         if not isinstance(cc, int) or isinstance(cc, bool):
             raise MassRoleError(400, _block("bad_request", "confirm_count fehlt"))
-        return mgr.start(body.get("role_id"), bool(body.get("include_bots", False)), cc,
-                         body.get("actor_id"), str(body.get("actor_name") or "")[:100])
+        actor = body.get("actor_id")
+        if actor is not None and not _valid_snowflake(str(actor)):
+            raise MassRoleError(400, _block("bad_request", "actor_id ungültig"))
+        return mgr.start(body.get("role_id"), _bots(body), cc,
+                         actor, str(body.get("actor_name") or "")[:100])
 
     def current(request, body):
         return {"job": mgr.current_job()}

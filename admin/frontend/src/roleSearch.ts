@@ -12,7 +12,7 @@ export function normalize(s: string): string {
     .replace(/ß/g, "ss")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[^\p{L}\p{N}]/gu, "");
 }
 
 /** Variante mit Umlaut→Grundbuchstabe (für Eingaben ohne „e“: „kueche“ vs. „kuche“). */
@@ -22,7 +22,7 @@ function normalizeBase(s: string): string {
     .replace(/ß/g, "ss")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]/g, "");
+    .replace(/[^\p{L}\p{N}]/gu, "");
 }
 
 export function levenshtein(a: string, b: string): number {

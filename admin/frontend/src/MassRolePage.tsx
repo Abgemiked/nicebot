@@ -40,23 +40,16 @@ export default function MassRolePage() {
     else { setRoles([]); setLoadError(res.error); }
   }, []);
 
+  const refreshJob = useCallback(async () => {
+    const r = await massRoleCurrent();
+    if (r.ok) setJob(r.data.job);
+    else toast("err", `Status nicht ladbar: ${r.error}`);
+  }, []);
+
   useEffect(() => {
     loadRoles();
-    massRoleCurrent().then((r) => { if (r.ok) setJob(r.data.job); });
-  }, [loadRoles]);
-
-  // Fortschritt pollen, solange ein Job läuft.
-  useEffect(() => {
-    if (!running) return;
-    const t = setInterval(async () => {
-      const r = await massRoleCurrent();
-      if (r.ok) {
-        setJob(r.data.job);
-        if (r.data.job && r.data.job.status !== "running") loadRoles();
-      }
-    }, 2000);
-    return () => clearInterval(t);
-  }, [running, loadRoles]);
+    refreshJob();
+  }, [loadRoles, refreshJob]);
 
   const loadPreview = useCallback(async (role: MassRole, bots: boolean) => {
     const seq = ++previewSeq.current;
@@ -67,6 +60,34 @@ export default function MassRolePage() {
     if (res.ok) setPreview(res.data);
     else { setPreview(null); toast("err", res.error); }
   }, []);
+
+  // Fortschritt pollen, solange ein Job läuft (ohne Überlappung, mit Fehlerhinweis).
+  const selectedRef = useRef<MassRole | null>(null);
+  selectedRef.current = selected;
+  const botsRef = useRef(false);
+  botsRef.current = includeBots;
+  useEffect(() => {
+    if (!running) return;
+    let inflight = false;
+    let errors = 0;
+    const t = setInterval(async () => {
+      if (inflight) return;
+      inflight = true;
+      const r = await massRoleCurrent();
+      inflight = false;
+      if (r.ok) {
+        errors = 0;
+        setJob(r.data.job);
+        if (r.data.job && r.data.job.status !== "running") {
+          loadRoles();
+          if (selectedRef.current) loadPreview(selectedRef.current, botsRef.current);
+        }
+      } else if (++errors === 3) {
+        toast("err", `Fortschritt nicht abrufbar: ${r.error}`);
+      }
+    }, 2000);
+    return () => clearInterval(t);
+  }, [running, loadRoles, loadPreview]);
 
   function choose(role: MassRole) {
     setSelected(role);
@@ -94,7 +115,11 @@ export default function MassRolePage() {
       toast("ok", "Vergabe gestartet.");
     } else {
       toast("err", res.error);
-      if (res.code === "stale" || res.code === "job_running") { setDialog(false); loadPreview(selected, includeBots); }
+      if (res.code === "stale" || res.code === "job_running") {
+        setDialog(false);
+        loadPreview(selected, includeBots);
+        refreshJob();
+      }
     }
   }
 
@@ -200,6 +225,11 @@ export default function MassRolePage() {
             <p className="text-sm text-gray-200">
               <b>{preview.will_receive}</b> Mitglieder bekommen die Rolle „{selected.name}“, <b>{preview.already_have}</b> haben sie bereits.
             </p>
+          )}
+          {!previewBusy && preview && !blocked && (preview.channel_overwrites?.length ?? 0) > 0 && (
+            <div className="mt-3 rounded-md border border-amber-700/50 bg-amber-950/20 p-3 text-[13px] text-amber-300">
+              Hinweis: Diese Rolle hat Kanal-Zugriffsrechte (u. a. in: {preview.channel_overwrites!.join(", ")}). Alle Mitglieder bekämen dadurch Zugriff auf diese Kanäle.
+            </div>
           )}
           <div className="mt-4">
             <button onClick={() => { setTyped(""); setDialog(true); }} disabled={!canStart} className={BTN_PRIMARY}>
