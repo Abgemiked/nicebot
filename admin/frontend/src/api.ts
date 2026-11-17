@@ -315,3 +315,83 @@ export async function saveConfig(updates: Record<string, unknown>): Promise<Save
   }
   return { ok: false, error: typeof detail === "string" ? detail : `Fehler ${res.status}` };
 }
+
+// --- Massen-Rollenvergabe (nur Voll-Admin) ---
+
+export interface MassRoleBlock {
+  code: string;
+  message: string;
+  permissions?: string[];
+}
+
+export interface MassRole {
+  id: string;
+  name: string;
+  color: string;
+  position: number;
+  member_count: number;
+  blocked: MassRoleBlock | null;
+}
+
+export interface MassRolePreview {
+  blocked: MassRoleBlock | null;
+  role_name?: string;
+  channel_overwrites?: string[];
+  total_targets: number;
+  already_have: number;
+  will_receive: number;
+}
+
+export interface MassRoleJob {
+  id: number;
+  role_id: string;
+  role_name: string;
+  include_bots: boolean;
+  actor_name: string | null;
+  status: "running" | "done" | "cancelled" | "failed" | "interrupted";
+  total: number;
+  ok: number;
+  skipped: number;
+  failed: number;
+  pending: number;
+  started_at: string;
+  finished_at: string | null;
+  note: string | null;
+  errors: { id: string; name: string | null; error: string | null }[];
+}
+
+export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; code?: string };
+
+async function massRoleCall<T>(method: string, path: string, body?: unknown): Promise<ApiResult<T>> {
+  try {
+    const res = await fetch(apiUrl(`/api/massrole${path}`), {
+      method,
+      credentials: "same-origin",
+      headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    if (res.ok) return { ok: true, data: (await res.json()) as T };
+    let detail: unknown = null;
+    try {
+      detail = (await res.json()).detail;
+    } catch {
+      /* kein JSON */
+    }
+    if (detail && typeof detail === "object") {
+      const d = detail as { message?: string; code?: string };
+      return { ok: false, error: d.message ?? `Fehler ${res.status}`, code: d.code };
+    }
+    return { ok: false, error: typeof detail === "string" ? detail : `Fehler ${res.status}` };
+  } catch {
+    return { ok: false, error: "Server nicht erreichbar" };
+  }
+}
+
+export const massRoleRoles = () => massRoleCall<{ roles: MassRole[] }>("GET", "/roles");
+export const massRolePreview = (role_id: string, include_bots: boolean) =>
+  massRoleCall<MassRolePreview>("POST", "/preview", { role_id, include_bots });
+export const massRoleStart = (role_id: string, include_bots: boolean, confirm_count: number) =>
+  massRoleCall<{ job: MassRoleJob }>("POST", "/start", { role_id, include_bots, confirm_count });
+export const massRoleCurrent = () => massRoleCall<{ job: MassRoleJob | null }>("GET", "/jobs/current");
+export const massRoleCancel = (id: number) => massRoleCall<{ job: MassRoleJob }>("POST", `/jobs/${id}/cancel`, {});
+export const massRoleResume = (id: number) => massRoleCall<{ job: MassRoleJob }>("POST", `/jobs/${id}/resume`, {});
