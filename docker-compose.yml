@@ -17,6 +17,15 @@ services:
       - CONFIG_PATH=/app/config/config.json
     env_file:
       - .env
+    # Gemessen (2026-11-24): ~23 MiB im Betrieb -> 256m laesst reichlich Spitzenreserve.
+    mem_limit: 256m
+    # Service-API (aiohttp, Port 8130) laeuft im Bot-Prozess: TCP-Connect = Prozess lebt.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8130), 3).close()"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     volumes:
       - ./data:/app/data
       - ./config:/app/config
@@ -40,6 +49,14 @@ services:
     restart: unless-stopped
     env_file:
       - ./admin/.env
+    # Gemessen (2026-11-24): ~13 MiB im Betrieb -> 128m mit Reserve.
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8140/api/health', timeout=3)"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     environment:
       # Einbettung unter abgemiked.de/nicebot: CSRF-Origin + SSO-Bridge-Ziel.
       - PUBLIC_ORIGIN=https://abgemiked.de

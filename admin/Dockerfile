@@ -1,6 +1,6 @@
 # nicebot-admin — Multi-Stage Build
 # Stage 1: Frontend (React/Vite) bauen
-FROM node:20-slim AS frontend
+FROM node:22-slim AS frontend
 WORKDIR /fe
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install

@@ -71,6 +71,9 @@ async def security_and_csrf(request: Request, call_next):
     response = await call_next(request)
     for k, v in _SECURITY_HEADERS.items():
         response.headers.setdefault(k, v)
+    # API-Antworten (Config/Secrets/Audit) nie cachen.
+    if request.url.path.startswith("/api/"):
+        response.headers.setdefault("Cache-Control", "no-store")
     return response
 
 

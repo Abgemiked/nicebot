@@ -5,6 +5,7 @@ PUT /api/config  — validiertes, atomares Schreiben der Whitelist-Keys.
 """
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
+from ..audit_db import log_admin_override
 from ..bot_client import BotApiError
 from ..authz import current_tier_live
 from ..bot_config import BotConfigError, read_config, write_config
@@ -84,4 +85,12 @@ async def put_config(payload: dict = Body(...), user=Depends(require_access)):
     except BotConfigError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     write_config(apply_updates(existing, clean))
+    # Audit (best effort): nur Key-Namen, keine Werte.
+    log_admin_override(
+        actor_id=user.get("discord_id"),
+        actor_name=user.get("username"),
+        target_id=None,
+        target_name="bot config.json",
+        meta={"scope": "config", "changed_keys": sorted(clean.keys())},
+    )
     return {"updated": sorted(clean.keys())}
