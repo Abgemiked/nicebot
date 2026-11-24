@@ -75,7 +75,7 @@ def test_put_config_writes_and_audits_keys_only(client, monkeypatch):
 def test_put_config_secret_key_rejected(client, monkeypatch):
     _live(monkeypatch, Tier.FULL_ADMIN)
     r = client.put("/api/config", json={"updates": {"TOKEN": "x"}}, headers=H)
-    assert r.status_code == 400
+    assert r.status_code == 403
     assert client.events == []
 
 
